@@ -300,7 +300,7 @@
     </div>
 
     <div class="game-container" id="gameContainer">
-        <div class="game-header">
+        <div class="game-header" id="gameHeader"> <!-- Added id="gameHeader" here -->
             <button id="backToMenuButton">Back to Menu</button>
             <div class="flex gap-4">
                 <div class="header-box">
@@ -330,15 +330,16 @@
         const confettiContainer = document.getElementById('confetti-container');
         const currentLevelDisplay = document.getElementById('currentLevelDisplay');
         const currentDifficultyDisplay = document.getElementById('currentDifficultyDisplay');
+        const gameHeader = document.getElementById('gameHeader'); // Correctly get gameHeader by its new ID
 
         const easyButton = document.getElementById('easyButton');
         const mediumButton = document.getElementById('mediumButton');
         const hardButton = document.getElementById('hardButton');
-        const continueGameButton = document.getElementById('continueGameButton'); // NEW: Continue Game button
+        const continueGameButton = document.getElementById('continueGameButton');
 
-        const shortcutPrompt = document.getElementById('shortcutPrompt'); // NEW: Shortcut prompt div
-        const shortcutText = document.getElementById('shortcutText'); // NEW: Shortcut text element
-        const closeShortcutPrompt = document.getElementById('closeShortcutPrompt'); // NEW: Close shortcut button
+        const shortcutPrompt = document.getElementById('shortcutPrompt');
+        const shortcutText = document.getElementById('shortcutText');
+        const closeShortcutPrompt = document.getElementById('closeShortcutPrompt');
 
         let currentDifficulty = 'medium'; // Default difficulty
         let currentLevel = 1;
