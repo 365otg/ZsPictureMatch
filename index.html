@@ -16,7 +16,7 @@
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
-            /* NEW: Rainbow water background animation */
+            /* Rainbow water background animation */
             background: linear-gradient(45deg, #FFC0CB, #FFD700, #90EE90, #ADD8E6, #8A2BE2, #FF69B4); /* Rainbow colors */
             background-size: 400% 400%; /* Larger than viewport to allow movement */
             animation: rainbowBackground 15s ease infinite alternate; /* Animation */
@@ -101,8 +101,9 @@
             display: none; /* Hidden by default, shown when game starts */
             flex-direction: column;
             align-items: center;
-            max-width: 95%;
-            width: 700px; /* Max width for the game */
+            max-width: 95%; /* Make it truly responsive */
+            width: 100%; /* Allow it to shrink */
+            box-sizing: border-box; /* Include padding in width */
             margin-bottom: 2rem;
         }
         .game-header {
@@ -114,6 +115,8 @@
             font-size: 1.2rem;
             font-weight: bold;
             color: #4a044e;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            gap: 1rem; /* Space between wrapped items */
         }
         /* Styles for the header boxes */
         .header-box {
@@ -126,6 +129,26 @@
             gap: 0.5rem;
             color: #6d28d9; /* Purple text */
         }
+        /* Adjust header layout for smaller screens */
+        @media (max-width: 768px) {
+            .game-header {
+                flex-direction: column; /* Stack vertically */
+                align-items: center;
+            }
+            .game-header > button, .game-header > div {
+                width: 100%; /* Make buttons and info boxes full width */
+                text-align: center;
+            }
+            .game-header .flex {
+                flex-direction: column; /* Stack level and difficulty */
+                gap: 0.5rem;
+            }
+            .header-box {
+                width: 100%; /* Make header boxes full width when stacked */
+                justify-content: center; /* Center text in stacked boxes */
+            }
+        }
+
         .game-board {
             display: grid;
             border: 4px solid #a78bfa; /* Purple border */
@@ -198,7 +221,7 @@
             border-radius: 0.75rem;
             font-weight: bold;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4みをpx 6px rgba(0, 0, 0, 0.1);
             border: none;
             cursor: pointer;
         }
@@ -247,7 +270,7 @@
             }
         }
 
-        /* NEW: Shortcut prompt styles */
+        /* Shortcut prompt styles */
         .shortcut-prompt {
             background-color: #e0f9ff;
             border-radius: 1rem;
@@ -289,10 +312,10 @@
             <button id="mediumButton">Medium (Ages 9-15)</button>
             <button id="hardButton">Hard (Adults)</button>
         </div>
-        <!-- NEW: Continue Game button -->
+        <!-- Continue Game button -->
         <button id="continueGameButton" class="hidden bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow-md mt-4 transition duration-300 ease-in-out">Continue Game</button>
 
-        <!-- NEW: Shortcut prompt -->
+        <!-- Shortcut prompt -->
         <div id="shortcutPrompt" class="shortcut-prompt">
             <p id="shortcutText"></p>
             <button id="closeShortcutPrompt">Got It!</button>
@@ -300,7 +323,7 @@
     </div>
 
     <div class="game-container" id="gameContainer">
-        <div class="game-header" id="gameHeader"> <!-- Added id="gameHeader" here -->
+        <div class="game-header" id="gameHeader">
             <button id="backToMenuButton">Back to Menu</button>
             <div class="flex gap-4">
                 <div class="header-box">
@@ -330,7 +353,7 @@
         const confettiContainer = document.getElementById('confetti-container');
         const currentLevelDisplay = document.getElementById('currentLevelDisplay');
         const currentDifficultyDisplay = document.getElementById('currentDifficultyDisplay');
-        const gameHeader = document.getElementById('gameHeader'); // Correctly get gameHeader by its new ID
+        const gameHeader = document.getElementById('gameHeader');
 
         const easyButton = document.getElementById('easyButton');
         const mediumButton = document.getElementById('mediumButton');
@@ -363,14 +386,14 @@
             '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐥', '🐧', '🦋', // Animals
             '🌸', '🌼', '🌻', '🌷', '🌳', '🌲', '🌵', '🌴', '🍀', '🍁', // Nature & Plants
             '🌈', '☀️', '🌟', '💖', '😊', '👍', '🎉', '🎈', '🎁', '🧸', '🚀', '👑', '💎', '💡', '🎵', '🎶', // Fun & Positive
-            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚗', // Buildings & Vehicles (simple) - Changed bike to car for consistency
+            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚗', // Buildings & Vehicles (simple)
             '⚽', '🏀', '🏈', '⚾', '🎾', '🎳', '🎯', '🎮', // Sports & Games
             // NEW CATEGORIES
             '🧑‍💻', '🔬', '🎨', '🛠️', '⚙️', '📈', '📊', '💼', // Work Emojis
-            '✈️', '🚢', '🚂', '🗺️', '🧭', '🗼', '🗽', '🕌', // Travel Emojis - Added Mosque for diversity
+            '✈️', '🚢', '🚂', '🗺️', '🧭', '🗼', '🗽', '🕌', // Travel Emojis
             '🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇯🇵', '🇨🇳', '🇮🇳', // Flag Emojis (representational)
             '🎸', '🎤', '🥁', '🎹', '🎺', '🎻', '🎧', '🎙️', // Music Emojis
-            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️', '💧', '🌊' // Night & Weather Emojis - Added water elements
+            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️', '💧', '🌊' // Night & Weather Emojis
         ];
 
         // Emojis to reveal behind the tiles (can be different from TILE_EMOJIS)
@@ -528,8 +551,16 @@
             // Calculate optimal tile size based on container width
             const gameContainerElement = document.getElementById('gameContainer');
             // Get available width and height for the board, considering padding and borders
-            const availableWidth = gameContainerElement.clientWidth - (1.5 * 16 * 2) - (4 * 2);
-            const availableHeight = gameContainerElement.clientHeight - (1.5 * 16 * 2) - (4 * 2) - gameHeader.offsetHeight;
+            // 1.5rem padding on game-container = 2 * 1.5 * 16px = 48px
+            // 4px border on game-board = 2 * 4px = 8px
+            // gameHeader height needs to be accounted for in available height
+            const gameContainerPadding = 1.5 * 16 * 2;
+            const gameBoardBorder = 4 * 2;
+            const headerHeight = gameHeader.offsetHeight;
+
+            const availableWidth = gameContainerElement.clientWidth - gameContainerPadding - gameBoardBorder;
+            // Subtract header height and some margin/padding below header
+            const availableHeight = gameContainerElement.clientHeight - gameContainerPadding - gameBoardBorder - headerHeight - (1.5 * 16); // 1.5rem margin-bottom on header
 
             // Calculate tile size based on both width and height constraints
             let calculatedTileSizeByWidth = Math.floor(availableWidth / cols);
@@ -553,8 +584,8 @@
             // Set up CSS Grid for the board
             gameBoard.style.gridTemplateColumns = `repeat(${cols}, ${currentTileSize}px)`;
             gameBoard.style.gridTemplateRows = `repeat(${rows}, ${currentTileSize}px)`;
-            gameBoard.style.width = `${cols * currentTileSize + 4 * 2}px`; /* Board width + border */
-            gameBoard.style.height = `${rows * currentTileSize + 4 * 2}px`; /* Board height + border */
+            gameBoard.style.width = `${cols * currentTileSize + gameBoardBorder}px`;
+            gameBoard.style.height = `${rows * currentTileSize + gameBoardBorder}px`;
 
 
             let tileIndex = 0;
