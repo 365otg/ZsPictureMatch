@@ -246,6 +246,27 @@
                 opacity: 0;
             }
         }
+
+        /* NEW: Shortcut prompt styles */
+        .shortcut-prompt {
+            background-color: #e0f9ff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+            color: #333;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            max-width: 80%;
+        }
+        .shortcut-prompt button {
+            background-color: #20c997;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -267,6 +288,14 @@
             <button id="easyButton">Easy (Ages 5-9)</button>
             <button id="mediumButton">Medium (Ages 9-15)</button>
             <button id="hardButton">Hard (Adults)</button>
+        </div>
+        <!-- NEW: Continue Game button -->
+        <button id="continueGameButton" class="hidden bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow-md mt-4 transition duration-300 ease-in-out">Continue Game</button>
+
+        <!-- NEW: Shortcut prompt -->
+        <div id="shortcutPrompt" class="shortcut-prompt">
+            <p id="shortcutText"></p>
+            <button id="closeShortcutPrompt">Got It!</button>
         </div>
     </div>
 
@@ -305,6 +334,11 @@
         const easyButton = document.getElementById('easyButton');
         const mediumButton = document.getElementById('mediumButton');
         const hardButton = document.getElementById('hardButton');
+        const continueGameButton = document.getElementById('continueGameButton'); // NEW: Continue Game button
+
+        const shortcutPrompt = document.getElementById('shortcutPrompt'); // NEW: Shortcut prompt div
+        const shortcutText = document.getElementById('shortcutText'); // NEW: Shortcut text element
+        const closeShortcutPrompt = document.getElementById('closeShortcutPrompt'); // NEW: Close shortcut button
 
         let currentDifficulty = 'medium'; // Default difficulty
         let currentLevel = 1;
@@ -328,14 +362,14 @@
             '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐥', '🐧', '🦋', // Animals
             '🌸', '🌼', '🌻', '🌷', '🌳', '🌲', '🌵', '🌴', '🍀', '🍁', // Nature & Plants
             '🌈', '☀️', '🌟', '💖', '😊', '👍', '🎉', '🎈', '🎁', '🧸', '🚀', '👑', '💎', '💡', '🎵', '🎶', // Fun & Positive
-            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚲', // Buildings & Vehicles (simple)
+            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚗', // Buildings & Vehicles (simple) - Changed bike to car for consistency
             '⚽', '🏀', '🏈', '⚾', '🎾', '🎳', '🎯', '🎮', // Sports & Games
             // NEW CATEGORIES
             '🧑‍💻', '🔬', '🎨', '🛠️', '⚙️', '📈', '📊', '💼', // Work Emojis
-            '✈️', '🚢', '🚂', '🚗', '🗺️', '🧭', '🗼', '🗽', // Travel Emojis
+            '✈️', '🚢', '🚂', '🗺️', '🧭', '🗼', '🗽', '🕌', // Travel Emojis - Added Mosque for diversity
             '🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇯🇵', '🇨🇳', '🇮🇳', // Flag Emojis (representational)
             '🎸', '🎤', '🥁', '🎹', '🎺', '🎻', '🎧', '🎙️', // Music Emojis
-            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️' // Night & Weather Emojis (some overlap with existing sun/rainbow)
+            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️', '💧', '🌊' // Night & Weather Emojis - Added water elements
         ];
 
         // Emojis to reveal behind the tiles (can be different from TILE_EMOJIS)
@@ -348,6 +382,36 @@
         let selectedTiles = []; // Stores the two currently selected tiles
         let matchedTileCount = 0; // Counts how many tiles have been matched
         let isProcessingClick = false; // To prevent rapid clicks during animation
+
+        // --- Local Storage Functions for Game State ---
+        const GAME_STATE_KEY = 'zaaraZaydasPictureMatchState';
+
+        /**
+         * Saves the current game level and difficulty to local storage.
+         */
+        function saveGameState() {
+            const gameState = {
+                level: currentLevel,
+                difficulty: currentDifficulty
+            };
+            localStorage.setItem(GAME_STATE_KEY, JSON.stringify(gameState));
+        }
+
+        /**
+         * Loads the game level and difficulty from local storage.
+         * @returns {object|null} The saved game state or null if none exists.
+         */
+        function loadGameState() {
+            const savedState = localStorage.getItem(GAME_STATE_KEY);
+            return savedState ? JSON.parse(savedState) : null;
+        }
+
+        /**
+         * Clears the saved game state from local storage.
+         */
+        function clearGameState() {
+            localStorage.removeItem(GAME_STATE_KEY);
+        }
 
         // --- Confetti Functions ---
         function createConfettiPiece() {
@@ -462,12 +526,16 @@
 
             // Calculate optimal tile size based on container width
             const gameContainerElement = document.getElementById('gameContainer');
-            const gameContainerWidth = gameContainerElement.clientWidth - (1.5 * 16 * 2); // Subtract container padding
-            const maxBoardWidth = gameContainerWidth - (4 * 2); // Subtract board border
-            let calculatedTileSize = Math.floor(maxBoardWidth / cols);
+            // Get available width and height for the board, considering padding and borders
+            const availableWidth = gameContainerElement.clientWidth - (1.5 * 16 * 2) - (4 * 2);
+            const availableHeight = gameContainerElement.clientHeight - (1.5 * 16 * 2) - (4 * 2) - gameHeader.offsetHeight;
 
-            // Clamp tile size between a minimum and maximum for good UX
-            currentTileSize = Math.max(MIN_TILE_SIZE, Math.min(calculatedTileSize, MAX_TILE_SIZE));
+            // Calculate tile size based on both width and height constraints
+            let calculatedTileSizeByWidth = Math.floor(availableWidth / cols);
+            let calculatedTileSizeByHeight = Math.floor(availableHeight / rows);
+
+            // Choose the smaller of the two to ensure it fits, then clamp
+            currentTileSize = Math.max(MIN_TILE_SIZE, Math.min(calculatedTileSizeByWidth, calculatedTileSizeByHeight, MAX_TILE_SIZE));
 
             // Set the dynamic emoji background
             const revealEmojiIndex = (currentLevel - 1) % REVEAL_EMOJIS.length; // Cycle through reveal emojis
@@ -602,6 +670,7 @@
             const { rows, cols } = boardConfigs[currentDifficulty];
             if (matchedTileCount === rows * cols) {
                 launchConfetti(); // Launch confetti on win!
+                saveGameState(); // Save state after winning a level
                 // Start next level after a short delay
                 setTimeout(() => {
                     currentLevel++;
@@ -610,32 +679,81 @@
             }
         }
 
+        // --- Mobile Shortcut Prompt ---
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+        }
+
+        function displayShortcutPrompt() {
+            if (isMobileDevice()) {
+                let text = "To play easily, you can add this game to your home screen! ";
+                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                    text += "Tap the Share button (⬆️) and then 'Add to Home Screen'.";
+                } else if (navigator.userAgent.match(/Android/i)) {
+                    text += "Tap the menu (⋮) or Share button and then 'Add to Home Screen'.";
+                }
+                shortcutText.textContent = text;
+                shortcutPrompt.style.display = 'flex';
+            }
+        }
+
+        closeShortcutPrompt.addEventListener('click', () => {
+            shortcutPrompt.style.display = 'none';
+        });
+
         // --- Event Listeners ---
         newGameButton.addEventListener('click', () => {
             currentLevel = 1; // Reset level for new game
+            clearGameState(); // Clear saved state for a new game
             initGame();
         });
 
         backToMenuButton.addEventListener('click', () => {
+            saveGameState(); // Save state when going back to menu
             gameContainer.style.display = 'none'; // Hide game
             landingScreen.style.display = 'flex'; // Show landing screen
             confettiContainer.innerHTML = ''; // Clear any confetti
+            updateLandingScreen(); // Update landing screen to show/hide continue button
         });
 
         easyButton.addEventListener('click', () => startGame('easy'));
         mediumButton.addEventListener('click', () => startGame('medium'));
         hardButton.addEventListener('click', () => startGame('hard'));
 
+        continueGameButton.addEventListener('click', () => { // NEW: Continue Game button listener
+            const savedState = loadGameState();
+            if (savedState) {
+                startGame(savedState.difficulty, savedState.level);
+            } else {
+                // This shouldn't happen if button is only shown when state exists
+                startGame('easy'); // Fallback to easy if somehow no state
+            }
+        });
+
         /**
-         * Starts the game with the chosen difficulty.
+         * Starts the game with the chosen difficulty and level.
          * @param {string} difficulty - 'easy', 'medium', or 'hard'.
+         * @param {number} [level=1] - The starting level. Defaults to 1.
          */
-        function startGame(difficulty) {
+        function startGame(difficulty, level = 1) {
             currentDifficulty = difficulty;
-            currentLevel = 1; // Always start at level 1 for a new difficulty
+            currentLevel = level;
             landingScreen.style.display = 'none'; // Hide landing screen
             gameContainer.style.display = 'flex'; // Show game container
             initGame();
+        }
+
+        /**
+         * Updates the landing screen based on saved game state.
+         */
+        function updateLandingScreen() {
+            const savedState = loadGameState();
+            if (savedState) {
+                continueGameButton.classList.remove('hidden');
+                continueGameButton.textContent = `Continue Level ${savedState.level} (${savedState.difficulty.charAt(0).toUpperCase() + savedState.difficulty.slice(1)})`;
+            } else {
+                continueGameButton.classList.add('hidden');
+            }
         }
 
         // Handle window resize to adjust tile sizes
@@ -651,6 +769,8 @@
             // Initially, only the landing screen is visible
             landingScreen.style.display = 'flex';
             gameContainer.style.display = 'none';
+            updateLandingScreen(); // Check for saved game on load
+            displayShortcutPrompt(); // Show shortcut prompt if on mobile
         };
     </script>
 </body>
