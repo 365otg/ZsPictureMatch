@@ -356,27 +356,27 @@
         const currentLevelDisplay = document.getElementById('currentLevelDisplay');
         const currentDifficultyDisplay = document.getElementById('currentDifficultyDisplay');
         const gameHeader = document.getElementById('gameHeader');
-        const timerDisplayBox = document.getElementById('timerDisplayBox'); // NEW
-        const timerDisplay = document.getElementById('timerDisplay'); // NEW
+        const timerDisplayBox = document.getElementById('timerDisplayBox');
+        const timerDisplay = document.getElementById('timerDisplay');
 
-        const relaxedPlayButton = document.getElementById('relaxedPlayButton'); // Renamed
-        const speedyChallengeButton = document.getElementById('speedyChallengeButton'); // Renamed
+        const relaxedPlayButton = document.getElementById('relaxedPlayButton');
+        const speedyChallengeButton = document.getElementById('speedyChallengeButton');
         const continueGameButton = document.getElementById('continueGameButton');
 
         const shortcutPrompt = document.getElementById('shortcutPrompt');
         const shortcutText = document.getElementById('shortcutText');
         const closeShortcutPrompt = document.getElementById('closeShortcutPrompt');
 
-        let currentDifficulty = 'relaxed'; // Default difficulty
+        let currentDifficulty = 'relaxed';
         let currentLevel = 1;
-        let isTimedMode = false; // NEW: Flag for timed mode
-        let timeLeft = 0; // NEW: Time left in seconds
-        let timerInterval = null; // NEW: Timer interval ID
+        let isTimedMode = false;
+        let timeLeft = 0;
+        let timerInterval = null;
 
         // Board configurations for different difficulties
         const boardConfigs = {
-            relaxed: { rows: 4, cols: 6, timeLimit: 0 },   // 24 tiles, 12 pairs, no time limit
-            speedy: { rows: 6, cols: 8, timeLimit: 90 }   // 48 tiles, 24 pairs, 90 seconds
+            relaxed: { rows: 4, cols: 6, timeLimit: 0 },
+            speedy: { rows: 6, cols: 8, timeLimit: 90 }
         };
 
         // Minimum and Maximum tile size for responsiveness
@@ -385,20 +385,19 @@
 
         // Master list of all positive, food, kid, family-friendly emojis
         const ALL_EMOJIS = [
-            '🍎', '🍌', '🍓', '🍇', '🍉', '🍊', '🍍', '🥝', // Fruits
-            '🍒', '🍑', '🍋', '🍐', '🥕', '🥦', '🌽', '🍄', // More fruits & veggies
-            '🍕', '🍦', '🍩', '🍪', '🍰', '🍬', '🍭', '🍫', '🍿', '🍔', '🍟', '🌮', '🍣', '🍜', '🍞', '🧀', // Food
-            '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐥', '🐧', '🦋', // Animals
-            '🌸', '🌼', '🌻', '🌷', '🌳', '🌲', '🌵', '🌴', '🍀', '🍁', // Nature & Plants
-            '🌈', '☀️', '🌟', '💖', '😊', '👍', '🎉', '🎈', '🎁', '🧸', '🚀', '👑', '💎', '💡', '🎵', '🎶', // Fun & Positive
-            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚗', // Buildings & Vehicles (simple)
-            '⚽', '🏀', '🏈', '⚾', '🎾', '🎳', '🎯', '🎮', // Sports & Games
-            // NEW CATEGORIES
-            '🧑‍💻', '🔬', '🎨', '🛠️', '⚙️', '📈', '📊', '💼', // Work Emojis
-            '✈️', '🚢', '🚂', '🗺️', '🧭', '🗼', '🗽', '🕌', // Travel Emojis
-            '🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇯🇵', '🇨🇳', '🇮🇳', // Flag Emojis (representational)
-            '🎸', '🎤', '🥁', '🎹', '🎺', '🎻', '🎧', '🎙️', // Music Emojis
-            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️', '💧', '🌊' // Night & Weather Emojis
+            '🍎', '🍌', '🍓', '🍇', '🍉', '🍊', '🍍', '🥝',
+            '🍒', '🍑', '🍋', '🍐', '🥕', '🥦', '🌽', '🍄',
+            '🍕', '🍦', '🍩', '🍪', '🍰', '🍬', '🍭', '🍫', '🍿', '🍔', '🍟', '🌮', '🍣', '🍜', '🍞', '🧀',
+            '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐥', '🐧', '🦋',
+            '🌸', '🌼', '🌻', '🌷', '🌳', '🌲', '🌵', '🌴', '🍀', '🍁',
+            '🌈', '☀️', '🌟', '💖', '😊', '👍', '🎉', '🎈', '🎁', '🧸', '🚀', '👑', '💎', '💡', '🎵', '🎶',
+            '🏠', '🏫', '🏥', '🚒', '🚓', '🚕', '🚌', '🚗',
+            '⚽', '🏀', '🏈', '⚾', '🎾', '🎳', '🎯', '🎮',
+            '🧑‍💻', '🔬', '🎨', '🛠️', '⚙️', '📈', '📊', '💼',
+            '✈️', '🚢', '🚂', '🗺️', '🧭', '🗼', '🗽', '🕌',
+            '🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇯🇵', '🇨🇳', '🇮🇳',
+            '🎸', '🎤', '🥁', '🎹', '🎺', '🎻', '🎧', '🎙️',
+            '🌙', '☁️', '☔', '❄️', '⚡', '🌬️', '☀️', '🌡️', '💧', '🌊'
         ];
 
         // Emojis to reveal behind the tiles (can be different from TILE_EMOJIS)
@@ -407,38 +406,28 @@
             '👍', '😊', '🥳', '🎈', '🎁', '🎊', '💫', '🌠', '✨', '🌟', '💫', '🚀', '🏆', '🥇', '🏅'
         ];
 
-        let board = []; // 2D array to store tile objects
-        let selectedTiles = []; // Stores the two currently selected tiles
-        let matchedTileCount = 0; // Counts how many tiles have been matched
-        let isProcessingClick = false; // To prevent rapid clicks during animation
+        let board = [];
+        let selectedTiles = [];
+        let matchedTileCount = 0;
+        let isProcessingClick = false;
 
         // --- Local Storage Functions for Game State ---
         const GAME_STATE_KEY = 'zaaraZaydasPictureMatchState';
 
-        /**
-         * Saves the current game level and difficulty to local storage.
-         */
         function saveGameState() {
             const gameState = {
                 level: currentLevel,
                 difficulty: currentDifficulty,
-                isTimedMode: isTimedMode // NEW: Save timed mode state
+                isTimedMode: isTimedMode
             };
             localStorage.setItem(GAME_STATE_KEY, JSON.stringify(gameState));
         }
 
-        /**
-         * Loads the game level and difficulty from local storage.
-         * @returns {object|null} The saved game state or null if none exists.
-         */
         function loadGameState() {
             const savedState = localStorage.getItem(GAME_STATE_KEY);
             return savedState ? JSON.parse(savedState) : null;
         }
 
-        /**
-         * Clears the saved game state from local storage.
-         */
         function clearGameState() {
             localStorage.removeItem(GAME_STATE_KEY);
         }
@@ -448,28 +437,24 @@
             const piece = document.createElement('div');
             piece.className = 'confetti-piece';
 
-            // Randomize color
-            const colors = ['#FFC0CB', '#FFD700', '#90EE90', '#ADD8E6', '#FF69B4', '#8A2BE2']; // Pink, Gold, LightGreen, LightBlue, HotPink, BlueViolet
+            const colors = ['#FFC0CB', '#FFD700', '#90EE90', '#ADD8E6', '#FF69B4', '#8A2BE2'];
             piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-            // Randomize position
             piece.style.left = `${Math.random() * 100}vw`;
-            piece.style.top = `${Math.random() * -100}px`; // Start above screen
+            piece.style.top = `${Math.random() * -100}px`;
 
-            // Randomize animation duration and delay
-            piece.style.animationDuration = `${2 + Math.random() * 2}s`; // 2 to 4 seconds
-            piece.style.animationDelay = `${Math.random() * 0.5}s`; // 0 to 0.5 seconds delay
+            piece.style.animationDuration = `${2 + Math.random() * 2}s`;
+            piece.style.animationDelay = `${Math.random() * 0.5}s`;
 
             return piece;
         }
 
         function launchConfetti() {
-            confettiContainer.innerHTML = ''; // Clear previous confetti
-            for (let i = 0; i < 100; i++) { // Generate 100 pieces
+            confettiContainer.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
                 confettiContainer.appendChild(createConfettiPiece());
             }
         }
-        // --- End Confetti Functions ---
 
         /**
          * Shuffles an array randomly.
@@ -479,7 +464,7 @@
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+                [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
@@ -494,15 +479,11 @@
             let tiles = [];
             const numPairs = (rows * cols) / 2;
 
-            // Dynamically select emojis for the current level
-            // For unlimited levels, we'll always pick a random subset from ALL_EMOJIS
-            // This ensures variety and new emojis appearing over levels.
-            const availableEmojis = ALL_EMOJIS.slice(); // Copy the master list
-            shuffleArray(availableEmojis); // Randomize the order of all available emojis
+            const availableEmojis = ALL_EMOJIS.slice();
+            shuffleArray(availableEmojis);
 
-            // Select the required number of unique emojis for this board
             const selectedEmojisForLevel = availableEmojis.slice(0, numPairs);
-            tiles = selectedEmojisForLevel.concat(selectedEmojisForLevel); // Create pairs
+            tiles = selectedEmojisForLevel.concat(selectedEmojisForLevel);
 
             return shuffleArray(tiles);
         }
@@ -518,27 +499,25 @@
             const tempCtx = tempCanvas.getContext('2d');
 
             const { rows, cols } = boardConfigs[currentDifficulty];
-            // Use the calculated tile size for the background canvas dimensions
             const boardWidth = cols * currentTileSize;
             const boardHeight = rows * currentTileSize;
 
             tempCanvas.width = boardWidth;
             tempCanvas.height = boardHeight;
 
-            tempCtx.fillStyle = '#dbeafe'; // Match the game board background color
+            tempCtx.fillStyle = '#dbeafe';
             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-            // Calculate font size relative to the smaller dimension of the board
-            tempCtx.font = `${Math.min(boardWidth, boardHeight) * 0.5}px Inter`; // Large emoji size
+            tempCtx.font = `${Math.min(boardWidth, boardHeight) * 0.5}px Inter`;
             tempCtx.textAlign = 'center';
             tempCtx.textBaseline = 'middle';
-            tempCtx.fillStyle = 'rgba(109, 40, 217, 0.5)'; // Semi-transparent purple
+            tempCtx.fillStyle = 'rgba(109, 40, 217, 0.5)';
             tempCtx.fillText(emoji, tempCanvas.width / 2, tempCanvas.height / 2);
 
             return tempCanvas.toDataURL();
         }
 
-        let currentTileSize = MAX_TILE_SIZE; // Initialize with max size, will be calculated in initGame
+        let currentTileSize = MAX_TILE_SIZE;
 
         /**
          * Formats seconds into a MM:SS string.
@@ -557,8 +536,8 @@
          * Starts the game timer.
          */
         function startTimer() {
-            if (timerInterval) clearInterval(timerInterval); // Clear any existing timer
-            timerDisplayBox.style.display = 'flex'; // Show timer display
+            if (timerInterval) clearInterval(timerInterval);
+            timerDisplayBox.style.display = 'flex';
 
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -566,12 +545,10 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    // Game Over condition for timed mode
-                    // Optionally, show a "Time's Up!" message
                     setTimeout(() => {
-                        alert("Time's Up! Game Over. Try again!"); // Using alert for simplicity, could be custom modal
-                        backToMenuButton.click(); // Go back to menu
-                    }, 100); // Small delay to ensure UI updates
+                        alert("Time's Up! Game Over. Try again!");
+                        backToMenuButton.click();
+                    }, 100);
                 }
             }, 1000);
         }
@@ -584,25 +561,24 @@
                 clearInterval(timerInterval);
                 timerInterval = null;
             }
-            timerDisplayBox.style.display = 'none'; // Hide timer display
+            timerDisplayBox.style.display = 'none';
         }
 
         /**
          * Initializes the game board with tiles.
          */
         function initGame() {
-            gameBoard.innerHTML = ''; // Clear previous board
+            gameBoard.innerHTML = '';
             board = [];
             selectedTiles = [];
             matchedTileCount = 0;
             isProcessingClick = false;
-            confettiContainer.innerHTML = ''; // Clear confetti from previous game
-            stopTimer(); // Ensure timer is stopped before new game starts
+            confettiContainer.innerHTML = '';
+            stopTimer();
 
             const { rows, cols, timeLimit } = boardConfigs[currentDifficulty];
             const shuffledEmojis = generateTiles();
 
-            // Setup timer if in timed mode
             isTimedMode = (timeLimit > 0);
             if (isTimedMode) {
                 timeLeft = timeLimit;
@@ -612,44 +588,35 @@
                 timerDisplayBox.style.display = 'none';
             }
 
-            // Calculate optimal tile size based on container width
-            const gameContainerElement = document.getElementById('gameContainer');
-            // Get available width and height for the board, considering padding and borders
-            // 1.5rem padding on game-container = 2 * 1.5 * 16px = 48px
-            // 4px border on game-board = 2 * 4px = 8px
-            // gameHeader height needs to be accounted for in available height
-            const gameContainerPadding = 1.5 * 16 * 2;
-            const gameBoardBorder = 4 * 2;
+            const gameContainerRect = gameContainer.getBoundingClientRect();
             const headerHeight = gameHeader.offsetHeight;
 
-            const availableWidth = gameContainerElement.clientWidth - gameContainerPadding - gameBoardBorder;
-            // Subtract header height and some margin/padding below header
-            const availableHeight = gameContainerElement.clientHeight - gameContainerPadding - gameBoardBorder - headerHeight - (1.5 * 16); // 1.5rem margin-bottom on header
+            // Calculate available space for the board
+            // Subtract gameContainer padding (1.5rem * 2 = 3rem = 48px)
+            // Subtract gameBoard border (4px * 2 = 8px)
+            // Subtract header height and its margin-bottom (1.5rem = 24px)
+            const availableWidth = gameContainerRect.width - (3 * 16) - (4 * 2);
+            const availableHeight = gameContainerRect.height - (3 * 16) - (4 * 2) - headerHeight - (1.5 * 16);
 
-            // Calculate tile size based on both width and height constraints
             let calculatedTileSizeByWidth = Math.floor(availableWidth / cols);
             let calculatedTileSizeByHeight = Math.floor(availableHeight / rows);
 
-            // Choose the smaller of the two to ensure it fits, then clamp
             currentTileSize = Math.max(MIN_TILE_SIZE, Math.min(calculatedTileSizeByWidth, calculatedTileSizeByHeight, MAX_TILE_SIZE));
 
-            // Set the dynamic emoji background
-            const revealEmojiIndex = (currentLevel - 1) % REVEAL_EMOJIS.length; // Cycle through reveal emojis
+            const revealEmojiIndex = (currentLevel - 1) % REVEAL_EMOJIS.length;
             const revealEmoji = REVEAL_EMOJIS[revealEmojiIndex];
             gameBoard.style.backgroundImage = `url('${generateEmojiBackground(revealEmoji)}')`;
             gameBoard.style.backgroundSize = 'cover';
             gameBoard.style.backgroundPosition = 'center';
             gameBoard.style.backgroundRepeat = 'no-repeat';
 
-            // Update display
             currentLevelDisplay.textContent = currentLevel;
             currentDifficultyDisplay.textContent = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
 
-            // Set up CSS Grid for the board
             gameBoard.style.gridTemplateColumns = `repeat(${cols}, ${currentTileSize}px)`;
             gameBoard.style.gridTemplateRows = `repeat(${rows}, ${currentTileSize}px)`;
-            gameBoard.style.width = `${cols * currentTileSize + gameBoardBorder}px`;
-            gameBoard.style.height = `${rows * currentTileSize + gameBoardBorder}px`;
+            gameBoard.style.width = `${cols * currentTileSize + (4 * 2)}px`;
+            gameBoard.style.height = `${rows * currentTileSize + (4 * 2)}px`;
 
 
             let tileIndex = 0;
@@ -664,12 +631,11 @@
                     tileElement.textContent = emoji;
                     tileElement.dataset.row = r;
                     tileElement.dataset.col = c;
-                    tileElement.dataset.type = emoji; // Store emoji type for matching
+                    tileElement.dataset.type = emoji;
 
-                    // Set tile dimensions and font size dynamically
                     tileElement.style.width = `${currentTileSize}px`;
                     tileElement.style.height = `${currentTileSize}px`;
-                    tileElement.style.fontSize = `${currentTileSize * 0.6}px`; // Adjust emoji size based on tile size
+                    tileElement.style.fontSize = `${currentTileSize * 0.6}px`;
 
                     tileElement.addEventListener('click', () => handleTileClick(tileElement));
                     gameBoard.appendChild(tileElement);
@@ -681,7 +647,7 @@
                         col: c,
                         isMatched: false,
                         isSelected: false,
-                        element: tileElement // Reference to the DOM element
+                        element: tileElement
                     };
                 }
             }
@@ -689,16 +655,11 @@
 
         /**
          * Checks if a tile is blocked by other tiles.
-         * This simplified version means all tiles are clickable unless matched.
-         * For a more "Mahjong" feel, you could implement rules like:
-         * - No tiles on top of it.
-         * - At least one of its long sides (left or right) is completely free.
          * @param {number} row - The row of the tile.
          * @param {number} col - The column of the tile.
          * @returns {boolean} True if the tile is blocked, false otherwise.
          */
         function isTileBlocked(row, col) {
-            // For this simple grid, a tile is only "blocked" if it's already matched.
             return board[row][col].isMatched;
         }
 
@@ -707,54 +668,50 @@
          * @param {HTMLElement} clickedElement - The DOM element of the clicked tile.
          */
         function handleTileClick(clickedElement) {
-            if (isProcessingClick) return; // Prevent clicks during animation
+            if (isProcessingClick) return;
 
             const row = parseInt(clickedElement.dataset.row);
             const col = parseInt(clickedElement.dataset.col);
             const clickedTile = board[row][col];
 
-            // If already matched or already selected, do nothing
             if (clickedTile.isMatched || clickedTile.isSelected) {
                 return;
             }
 
-            // Select the tile
             clickedTile.isSelected = true;
             clickedElement.classList.add('selected');
             selectedTiles.push(clickedTile);
 
             if (selectedTiles.length === 2) {
-                isProcessingClick = true; // Block further clicks
+                isProcessingClick = true;
                 const [tile1, tile2] = selectedTiles;
 
                 if (tile1.type === tile2.type) {
-                    // It's a match!
-                    tile1.element.classList.add('correct'); // Add green feedback
+                    tile1.element.classList.add('correct');
                     tile2.element.classList.add('correct');
                     setTimeout(() => {
                         tile1.isMatched = true;
                         tile2.isMatched = true;
-                        tile1.element.classList.remove('selected', 'correct'); // Remove selected and green feedback
+                        tile1.element.classList.remove('selected', 'correct');
                         tile2.element.classList.remove('correct');
                         tile1.element.classList.add('matched');
                         tile2.element.classList.add('matched');
                         matchedTileCount += 2;
-                        selectedTiles = []; // Clear selected tiles
-                        isProcessingClick = false; // Allow clicks again
+                        selectedTiles = [];
+                        isProcessingClick = false;
                         checkWin();
-                    }, 500); // Short delay to see the selection and green
+                    }, 500);
                 } else {
-                    // Not a match
-                    tile1.element.classList.add('incorrect'); // Add red feedback
+                    tile1.element.classList.add('incorrect');
                     tile2.element.classList.add('incorrect');
                     setTimeout(() => {
                         tile1.isSelected = false;
                         tile2.isSelected = false;
-                        tile1.element.classList.remove('selected', 'incorrect'); // Remove red and selected
+                        tile1.element.classList.remove('selected', 'incorrect');
                         tile2.element.classList.remove('incorrect');
-                        selectedTiles = []; // Clear selected tiles
-                        isProcessingClick = false; // Allow clicks again
-                    }, 700); // Longer delay to see the mismatch and red
+                        selectedTiles = [];
+                        isProcessingClick = false;
+                    }, 700);
                 }
             }
         }
@@ -765,14 +722,13 @@
         function checkWin() {
             const { rows, cols } = boardConfigs[currentDifficulty];
             if (matchedTileCount === rows * cols) {
-                launchConfetti(); // Launch confetti on win!
-                stopTimer(); // Stop timer on win
-                saveGameState(); // Save state after winning a level
-                // Start next level after a short delay
+                launchConfetti();
+                stopTimer();
+                saveGameState();
                 setTimeout(() => {
                     currentLevel++;
                     initGame();
-                }, 2000); // Wait 2 seconds after confetti
+                }, 2000);
             }
         }
 
@@ -782,16 +738,8 @@
         }
 
         function displayShortcutPrompt() {
-            if (isMobileDevice()) {
-                let text = "To play easily, you can add this game to your home screen! ";
-                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                    text += "Tap the Share button (⬆️) and then 'Add to Home Screen'.";
-                } else if (navigator.userAgent.match(/Android/i)) {
-                    text += "Tap the menu (⋮) or Share button and then 'Add to Home Screen'.";
-                }
-                shortcutText.textContent = text;
-                shortcutPrompt.style.display = 'flex';
-            }
+            // Removed the content of the prompt as per user request
+            // shortcutPrompt.style.display = 'flex'; // Keep this if you want the box to show for other reasons
         }
 
         closeShortcutPrompt.addEventListener('click', () => {
@@ -800,30 +748,29 @@
 
         // --- Event Listeners ---
         newGameButton.addEventListener('click', () => {
-            currentLevel = 1; // Reset level for new game
-            clearGameState(); // Clear saved state for a new game
+            currentLevel = 1;
+            clearGameState();
             initGame();
         });
 
         backToMenuButton.addEventListener('click', () => {
-            saveGameState(); // Save state when going back to menu
-            stopTimer(); // Stop timer when going back to menu
-            gameContainer.style.display = 'none'; // Hide game
-            landingScreen.style.display = 'flex'; // Show landing screen
-            confettiContainer.innerHTML = ''; // Clear any confetti
-            updateLandingScreen(); // Update landing screen to show/hide continue button
+            saveGameState();
+            stopTimer();
+            gameContainer.style.display = 'none';
+            landingScreen.style.display = 'flex';
+            confettiContainer.innerHTML = '';
+            updateLandingScreen();
         });
 
-        relaxedPlayButton.addEventListener('click', () => startGame('relaxed')); // Renamed
-        speedyChallengeButton.addEventListener('click', () => startGame('speedy')); // Renamed
+        relaxedPlayButton.addEventListener('click', () => startGame('relaxed'));
+        speedyChallengeButton.addEventListener('click', () => startGame('speedy'));
 
         continueGameButton.addEventListener('click', () => {
             const savedState = loadGameState();
             if (savedState) {
                 startGame(savedState.difficulty, savedState.level);
             } else {
-                // This shouldn't happen if button is only shown when state exists
-                startGame('relaxed'); // Fallback to relaxed if somehow no state
+                startGame('relaxed');
             }
         });
 
@@ -835,8 +782,8 @@
         function startGame(difficulty, level = 1) {
             currentDifficulty = difficulty;
             currentLevel = level;
-            landingScreen.style.display = 'none'; // Hide landing screen
-            gameContainer.style.display = 'flex'; // Show game container
+            landingScreen.style.display = 'none';
+            gameContainer.style.display = 'flex';
             initGame();
         }
 
@@ -856,7 +803,6 @@
 
         // Handle window resize to adjust tile sizes
         window.addEventListener('resize', () => {
-            // Only re-initialize if the game is currently visible
             if (gameContainer.style.display === 'flex') {
                 initGame();
             }
@@ -864,11 +810,10 @@
 
         // Initialize the game when the window loads
         window.onload = function() {
-            // Initially, only the landing screen is visible
             landingScreen.style.display = 'flex';
             gameContainer.style.display = 'none';
-            updateLandingScreen(); // Check for saved game on load
-            displayShortcutPrompt(); // Show shortcut prompt if on mobile
+            updateLandingScreen();
+            displayShortcutPrompt();
         };
     </script>
 </body>
