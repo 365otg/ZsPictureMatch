@@ -221,7 +221,7 @@
             border-radius: 0.75rem;
             font-weight: bold;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4みをpx 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border: none;
             cursor: pointer;
         }
@@ -308,9 +308,8 @@
         </div>
         <p class="text-gray-700 text-lg mb-4">Choose your challenge level:</p>
         <div class="difficulty-buttons">
-            <button id="easyButton">Easy (Ages 5-9)</button>
-            <button id="mediumButton">Medium (Ages 9-15)</button>
-            <button id="hardButton">Hard (Adults)</button>
+            <button id="relaxedPlayButton">Relaxed Play</button>
+            <button id="speedyChallengeButton">Speedy Challenge</button>
         </div>
         <!-- Continue Game button -->
         <button id="continueGameButton" class="hidden bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow-md mt-4 transition duration-300 ease-in-out">Continue Game</button>
@@ -331,6 +330,9 @@
                 </div>
                 <div class="header-box">
                     <span>Difficulty: <span id="currentDifficultyDisplay"></span></span>
+                </div>
+                <div class="header-box" id="timerDisplayBox" style="display: none;">
+                    <span>Time: <span id="timerDisplay">00:00</span></span>
                 </div>
             </div>
             <button id="newGameButton">New Game!</button>
@@ -354,24 +356,27 @@
         const currentLevelDisplay = document.getElementById('currentLevelDisplay');
         const currentDifficultyDisplay = document.getElementById('currentDifficultyDisplay');
         const gameHeader = document.getElementById('gameHeader');
+        const timerDisplayBox = document.getElementById('timerDisplayBox'); // NEW
+        const timerDisplay = document.getElementById('timerDisplay'); // NEW
 
-        const easyButton = document.getElementById('easyButton');
-        const mediumButton = document.getElementById('mediumButton');
-        const hardButton = document.getElementById('hardButton');
+        const relaxedPlayButton = document.getElementById('relaxedPlayButton'); // Renamed
+        const speedyChallengeButton = document.getElementById('speedyChallengeButton'); // Renamed
         const continueGameButton = document.getElementById('continueGameButton');
 
         const shortcutPrompt = document.getElementById('shortcutPrompt');
         const shortcutText = document.getElementById('shortcutText');
         const closeShortcutPrompt = document.getElementById('closeShortcutPrompt');
 
-        let currentDifficulty = 'medium'; // Default difficulty
+        let currentDifficulty = 'relaxed'; // Default difficulty
         let currentLevel = 1;
+        let isTimedMode = false; // NEW: Flag for timed mode
+        let timeLeft = 0; // NEW: Time left in seconds
+        let timerInterval = null; // NEW: Timer interval ID
 
         // Board configurations for different difficulties
         const boardConfigs = {
-            easy: { rows: 4, cols: 6 },   // 24 tiles, 12 pairs
-            medium: { rows: 6, cols: 8 }, // 48 tiles, 24 pairs
-            hard: { rows: 6, cols: 12 }   // 72 tiles, 36 pairs
+            relaxed: { rows: 4, cols: 6, timeLimit: 0 },   // 24 tiles, 12 pairs, no time limit
+            speedy: { rows: 6, cols: 8, timeLimit: 90 }   // 48 tiles, 24 pairs, 90 seconds
         };
 
         // Minimum and Maximum tile size for responsiveness
@@ -416,7 +421,8 @@
         function saveGameState() {
             const gameState = {
                 level: currentLevel,
-                difficulty: currentDifficulty
+                difficulty: currentDifficulty,
+                isTimedMode: isTimedMode // NEW: Save timed mode state
             };
             localStorage.setItem(GAME_STATE_KEY, JSON.stringify(gameState));
         }
@@ -535,6 +541,53 @@
         let currentTileSize = MAX_TILE_SIZE; // Initialize with max size, will be calculated in initGame
 
         /**
+         * Formats seconds into a MM:SS string.
+         * @param {number} seconds - The total seconds.
+         * @returns {string} Formatted time string.
+         */
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+            return `${formattedMinutes}:${formattedSeconds}`;
+        }
+
+        /**
+         * Starts the game timer.
+         */
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval); // Clear any existing timer
+            timerDisplayBox.style.display = 'flex'; // Show timer display
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    // Game Over condition for timed mode
+                    // Optionally, show a "Time's Up!" message
+                    setTimeout(() => {
+                        alert("Time's Up! Game Over. Try again!"); // Using alert for simplicity, could be custom modal
+                        backToMenuButton.click(); // Go back to menu
+                    }, 100); // Small delay to ensure UI updates
+                }
+            }, 1000);
+        }
+
+        /**
+         * Stops the game timer.
+         */
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerDisplayBox.style.display = 'none'; // Hide timer display
+        }
+
+        /**
          * Initializes the game board with tiles.
          */
         function initGame() {
@@ -544,9 +597,20 @@
             matchedTileCount = 0;
             isProcessingClick = false;
             confettiContainer.innerHTML = ''; // Clear confetti from previous game
+            stopTimer(); // Ensure timer is stopped before new game starts
 
-            const { rows, cols } = boardConfigs[currentDifficulty];
+            const { rows, cols, timeLimit } = boardConfigs[currentDifficulty];
             const shuffledEmojis = generateTiles();
+
+            // Setup timer if in timed mode
+            isTimedMode = (timeLimit > 0);
+            if (isTimedMode) {
+                timeLeft = timeLimit;
+                timerDisplay.textContent = formatTime(timeLeft);
+                startTimer();
+            } else {
+                timerDisplayBox.style.display = 'none';
+            }
 
             // Calculate optimal tile size based on container width
             const gameContainerElement = document.getElementById('gameContainer');
@@ -702,6 +766,7 @@
             const { rows, cols } = boardConfigs[currentDifficulty];
             if (matchedTileCount === rows * cols) {
                 launchConfetti(); // Launch confetti on win!
+                stopTimer(); // Stop timer on win
                 saveGameState(); // Save state after winning a level
                 // Start next level after a short delay
                 setTimeout(() => {
@@ -742,29 +807,29 @@
 
         backToMenuButton.addEventListener('click', () => {
             saveGameState(); // Save state when going back to menu
+            stopTimer(); // Stop timer when going back to menu
             gameContainer.style.display = 'none'; // Hide game
             landingScreen.style.display = 'flex'; // Show landing screen
             confettiContainer.innerHTML = ''; // Clear any confetti
             updateLandingScreen(); // Update landing screen to show/hide continue button
         });
 
-        easyButton.addEventListener('click', () => startGame('easy'));
-        mediumButton.addEventListener('click', () => startGame('medium'));
-        hardButton.addEventListener('click', () => startGame('hard'));
+        relaxedPlayButton.addEventListener('click', () => startGame('relaxed')); // Renamed
+        speedyChallengeButton.addEventListener('click', () => startGame('speedy')); // Renamed
 
-        continueGameButton.addEventListener('click', () => { // NEW: Continue Game button listener
+        continueGameButton.addEventListener('click', () => {
             const savedState = loadGameState();
             if (savedState) {
                 startGame(savedState.difficulty, savedState.level);
             } else {
                 // This shouldn't happen if button is only shown when state exists
-                startGame('easy'); // Fallback to easy if somehow no state
+                startGame('relaxed'); // Fallback to relaxed if somehow no state
             }
         });
 
         /**
          * Starts the game with the chosen difficulty and level.
-         * @param {string} difficulty - 'easy', 'medium', or 'hard'.
+         * @param {string} difficulty - 'relaxed' or 'speedy'.
          * @param {number} [level=1] - The starting level. Defaults to 1.
          */
         function startGame(difficulty, level = 1) {
@@ -782,7 +847,8 @@
             const savedState = loadGameState();
             if (savedState) {
                 continueGameButton.classList.remove('hidden');
-                continueGameButton.textContent = `Continue Level ${savedState.level} (${savedState.difficulty.charAt(0).toUpperCase() + savedState.difficulty.slice(1)})`;
+                const difficultyName = savedState.difficulty.charAt(0).toUpperCase() + savedState.difficulty.slice(1);
+                continueGameButton.textContent = `Continue Level ${savedState.level} (${difficultyName})`;
             } else {
                 continueGameButton.classList.add('hidden');
             }
